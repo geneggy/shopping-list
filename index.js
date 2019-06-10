@@ -7,12 +7,15 @@
 // delete items function
 
 //shopping list data model
-const STORE = [
-  {id: cuid(), name: 'apples', checked: false},
-  {id: cuid(), name: 'oranges', checked: false},
-  {id: cuid(), name: 'milk', checked: true},
-  {id: cuid(), name: 'bread', checked: false}
-];
+const STORE = {
+  items: [
+    {id: cuid(), name: 'apples', checked: false},
+    {id: cuid(), name: 'oranges', checked: false},
+    {id: cuid(), name: 'milk', checked: true},
+    {id: cuid(), name: 'bread', checked: false}
+  ],
+  hideCompleted: false
+};
 
 //function to generate shopping items element
 function generateItemElement(item) {
@@ -38,11 +41,15 @@ function generateItemString(storedList) {
 
 //A shopping List should be rendered to the page
 function renderList() {
-// for each item in store, generate a string representing a <li> with item name rendered as inner text
-//items index in the STORE set as a data attribute on the <li>
-//checked state rendered as the presence or absence of css class .shopping-item_+checked from index.css
+  // set up a copy of the store's items in a local variable that we will reassign to a new
+  // version if any filtering of the list occurs
+  let filteredItems = STORE.items;
 
-  const shoppingListItemsString = generateItemString(STORE);
+  if (STORE.hideCompleted) {
+    filteredItems = filteredItems.filter(item => !item.checked);
+  }
+
+  const shoppingListItemsString = generateItemString(filteredItems);
 
   //render the shopping list into the DOM
   $('.js-shopping-list').html(shoppingListItemsString);
@@ -50,7 +57,7 @@ function renderList() {
 
 
 function addItemToArray(itemName) {
-  STORE.push({id: cuid(), name: itemName, checked: false});
+  STORE.items.push({id: cuid(), name: itemName, checked: false});
 }
 
 //should be able to add items to the STORE array
@@ -78,7 +85,7 @@ function getItemId(item) {
 
 //function to change check status in store array
 function checkToggle(itemId) {
-  const item = STORE.find(item => item.id === itemId);
+  const item = STORE.items.find(item => item.id === itemId);
   item.checked = !item.checked;
 }
 
@@ -92,14 +99,27 @@ function handleCheckItem() {
 
 // should be able to delete items on the STORE array at the current index
 function deleteItemInArray (itemId) {
-  const itemIndex = STORE.findIndex(item => item.id === itemId);
-  STORE.splice(itemIndex, 1);
+  const itemIndex = STORE.items.findIndex(item => item.id === itemId);
+  STORE.items.splice(itemIndex, 1);
 }
 
 function handleDeleteItem() {
   $('.shopping-list').on('click','.shopping-item-delete', event => {
     const id = getItemId(event.currentTarget);
     deleteItemInArray(id);
+    renderList();
+  });
+}
+
+// Toggles the STORE.hideCompleted property
+function toggleHideFilter() {
+  STORE.hideCompleted = !STORE.hideCompleted;
+}
+
+// Places an event listener on the checkbox for hiding completed items
+function handleToggleHideFilter() {
+  $('.js-hide-completed-toggle').on('click', () => {
+    toggleHideFilter();
     renderList();
   });
 }
@@ -111,6 +131,7 @@ function handleShoppingList() {
   handleItemSubmit();
   handleDeleteItem();
   handleCheckItem();
+  handleToggleHideFilter();
 }
 
 // call handleShoppingList when page loads
