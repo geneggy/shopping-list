@@ -8,10 +8,10 @@
 
 //shopping list data model
 const STORE = [
-  {name: 'apples', checked: false},
-  {name: 'oranges', checked: false},
-  {name: 'milk', checked: true},
-  {name: 'bread', checked: false}
+  {id: cuid(), name: 'apples', checked: false},
+  {id: cuid(), name: 'oranges', checked: false},
+  {id: cuid(), name: 'milk', checked: true},
+  {id: cuid(), name: 'bread', checked: false}
 ];
 
 //function to generate shopping items element
@@ -50,7 +50,7 @@ function renderList() {
 
 
 function addItemToArray(itemName) {
-  STORE.push({name: itemName, checked: false});
+  STORE.push({id: cuid(), name: itemName, checked: false});
 }
 
 //should be able to add items to the STORE array
@@ -71,17 +71,16 @@ function handleItemSubmit() {
   });
 }
 
-//function to change check status in store array
-function checkToggle(itemId) {
-  const item = STORE.find(item => item.id === itemId);
-  item.checked = !item.checked;
-}
-
 //grabs item ID
 function getItemId(item) {
   return $(item).closest('li').data('item-id');
 }
 
+//function to change check status in store array
+function checkToggle(itemId) {
+  const item = STORE.find(item => item.id === itemId);
+  item.checked = !item.checked;
+}
 
 function handleCheckItem() {
   $('.shopping-list').on('click','.shopping-item-toggle', event => {
@@ -91,12 +90,17 @@ function handleCheckItem() {
   });
 }
 
-//function to 
+// should be able to delete items on the STORE array at the current index
+function deleteItemInArray (itemId) {
+  const itemIndex = STORE.findIndex(item => item.id === itemId);
+  STORE.splice(itemIndex, 1);
+}
 
-// should be able to delete items on the STORE array
-function deleteItem() {
+function handleDeleteItem() {
   $('.shopping-list').on('click','.shopping-item-delete', event => {
-    $(event.currentTarget).closest('li').remove();
+    const id = getItemId(event.currentTarget);
+    deleteItemInArray(id);
+    renderList();
   });
 }
 
@@ -105,9 +109,10 @@ function deleteItem() {
 function handleShoppingList() {
   renderList();
   handleItemSubmit();
-  deleteItem();
+  handleDeleteItem();
   handleCheckItem();
 }
 
+// call handleShoppingList when page loads
 $(handleShoppingList);
 
